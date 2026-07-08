@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>도선 배열 도파관 — 입사파 + 산란파로 보는 차단</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>도선 배열 도파관 — 입사파 + 산란파로 보는 차단</h1>
+  <p class="subtitle">도체 도선 두 줄로 도파관 벽을 만듭니다. 입사파가 도선 표면 E=0 조건을 통해 전류를 강제하고,
+     그 산란파가 내부에서 균일 성분을 지워 차단(cutoff)을 만듭니다. 상쇄·차단은 경계조건의 <em>결과</em>입니다.</p>
+  <p class="polar-fixed">편광: E∥도선 — 이 편광에는 TEM 모드가 없음</p>
+</header>
+
+<div class="app">
+  <aside class="controls">
+    <section class="control-group presets">
+      <button id="presetProp" class="preset">① 전파 (λ&lt;2a)</button>
+      <button id="presetCut" class="preset">② 차단 (λ&gt;2a)</button>
+      <button id="presetSparse" class="preset">③ 성긴 벽 (d↑)</button>
+    </section>
+
+    <section class="control-group">
+      <label class="slider-label">파장 λ <span class="readout" id="lambdaVal"></span></label>
+      <input type="range" id="lambda" step="2">
+      <label class="slider-label">도파관 간격 a <span class="readout" id="aVal"></span></label>
+      <input type="range" id="aGap" min="40" max="90" step="2" value="60">
+      <label class="slider-label">도선 간격 d <span class="readout" id="dVal"></span></label>
+      <input type="range" id="dWire" min="2" max="25" step="1" value="5">
+      <label class="slider-label">도파관 길이 L <span class="readout" id="lenVal"></span></label>
+      <input type="range" id="lenL" min="200" max="400" step="20" value="300">
+    </section>
+
+    <section class="control-group">
+      <label class="slider-label">입사 형태</label>
+      <label class="radio-row"><input type="radio" name="incType" value="plane" checked> 평면파 (입구 결합)</label>
+      <label class="radio-row"><input type="radio" name="incType" value="line"> 선원파 (내부 여기 x=−80)</label>
+    </section>
+
+    <section class="control-group">
+      <label class="slider-label">속도 <span class="readout" id="speedVal">0.15 rad/f</span></label>
+      <input type="range" id="speed" min="0.05" max="0.50" step="0.05" value="0.15">
+      <button id="pauseBtn">⏸ 일시정지</button>
+    </section>
+
+    <section class="control-group info-box">
+      <div class="info" id="cutoffBadge"></div>
+      <div class="info" id="freqInfo"></div>
+      <div class="info" id="kappaInfo"></div>
+      <div class="info" id="kappaCompare"></div>
+      <div class="gauge-wrap"><div class="gauge-label">도체판 근사</div><div class="gauge"><div class="gauge-fill" id="plateGauge"></div></div></div>
+      <div class="note" id="plateGaugeCap"></div>
+      <div class="info" id="leakInfo"></div>
+      <div class="info" id="transInfo"></div>
+      <div class="info" id="swrInfo"></div>
+    </section>
+
+    <section class="control-group">
+      <button id="sweepBtn">⑤ T(λ) 스윕 계산 (평면파 전용)</button>
+      <div class="note" id="sweepStatus"></div>
+    </section>
+  </aside>
+
+  <main class="panels">
+    <section class="panel"><h3>① 입사파 <span class="sub">평면파 또는 선원파만</span></h3><div class="cv-wrap"><canvas id="cvInc"></canvas></div>
+      <p class="note" id="incCap"></p></section>
+    <section class="panel"><h3>② 산란파 <span class="sub">도선 표면 E=0이 강제한 산란파</span> <span id="phasorLegend" class="legend"></span></h3><div class="cv-wrap"><canvas id="cvScat"></canvas></div></section>
+    <section class="panel"><h3>③ 전체장 <span class="sub">① + ② — 눈으로 더하면 이 그림</span></h3><div class="cv-wrap"><canvas id="cvTot"></canvas></div></section>
+    <section class="panel"><h3>④ n=1 모드 진폭 |c₁(x)| <span class="sub">측정 실선 · 이론 점선</span></h3><div class="cv-wrap"><canvas id="cvGraph"></canvas></div>
+      <p class="note">세로축은 이 그래프 자체 정규화 — 위 패널의 색 밝기와 직접 비교하지 말 것.</p></section>
+    <section class="panel panel-sweep"><h3>⑤ 투과율 T vs λ/2a <span class="sub">d=5·10·20, 세로축 선형 %</span></h3><div class="cv-wrap"><canvas id="cvSweep"></canvas></div>
+      <p class="note">평면파 입사, L=현재값 기준. 차단 쪽 값은 길이에 따라 달라진다. a·L을 바꾸면 곡선이 흐려짐(재계산 필요).</p></section>
+  </main>
+</div>
+
+<script src="hankel.js"></script>
+<script src="core.js"></script>
+<script src="field.js"></script>
+<script src="diag.js"></script>
+<script src="render.js"></script>
+<script src="sweep.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
