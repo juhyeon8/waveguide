@@ -186,6 +186,6 @@
   el('presetCut').addEventListener('click', function () { applyPreset('cut'); });
   el('presetSparse').addEventListener('click', function () { applyPreset('sparse'); });
 
-  clampLambda(); rebuild(); syncReadouts(); updateInfo(); requestAnimationFrame(frame);
+  clampLambda(); rebuild(); syncReadouts(); updateInfo(); drawSweepPanel(); requestAnimationFrame(frame);
   window.__wg = { state: state, rebuild: rebuild };   // Task 8 확장용 훅
 })();
