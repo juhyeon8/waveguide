@@ -49,6 +49,7 @@
     [cv.inc, cv.scat, cv.tot].forEach(function (c) { c.width = Nx; c.height = Ny; });
     cv.graph.width = Nx; cv.graph.height = 120;
     WG.setPhasorLegend(el('phasorLegend'), info.evanescent);
+    WG.updateOverlays({ inc: cv.inc.parentNode, scat: cv.scat.parentNode, tot: cv.tot.parentNode }, geom());
   }
 
   function frame() {
@@ -175,10 +176,17 @@
     recompute();
   }
 
-  el('lambda').addEventListener('input', function (e) { state.lambda = +e.target.value; rebuild(); syncReadouts(); updateInfo(); refreshSweepStale(); });
-  el('aGap').addEventListener('input', function (e) { state.a = +e.target.value; recompute(); });
-  el('dWire').addEventListener('input', function (e) { state.d = +e.target.value; recompute(); });
-  el('lenL').addEventListener('input', function (e) { state.L = +e.target.value; recompute(); });
+  var dragTimer = null;
+  function scheduleRecompute() {
+    if (dragTimer) clearTimeout(dragTimer);
+    el('sweepStatus').textContent = '';
+    dragTimer = setTimeout(function () { recompute(); dragTimer = null; }, 150);
+  }
+
+  el('lambda').addEventListener('input', function (e) { state.lambda = +e.target.value; syncReadouts(); scheduleRecompute(); });
+  el('aGap').addEventListener('input', function (e) { state.a = +e.target.value; syncReadouts(); scheduleRecompute(); });
+  el('dWire').addEventListener('input', function (e) { state.d = +e.target.value; syncReadouts(); scheduleRecompute(); });
+  el('lenL').addEventListener('input', function (e) { state.L = +e.target.value; syncReadouts(); scheduleRecompute(); });
   Array.prototype.forEach.call(document.getElementsByName('incType'), function (r) {
     r.addEventListener('change', function (e) { if (e.target.checked) { state.inc = e.target.value; rebuild(); updateInfo(); } });
   });

@@ -119,9 +119,24 @@
       ctx.beginPath(); ctx.moveTo(X(r), y1); ctx.lineTo(X(r), y0p); ctx.stroke(); ctx.setLineDash([]);
     }
   }
+  function updateOverlays(wraps, geom) {
+    var Nx = geom.Nx, Ny = geom.Ny, y0 = geom.y0, a = geom.a, xLeft = geom.xLeft;
+    function clear(w) { var e = w.getElementsByClassName('cv-label'); while (e.length) e[0].parentNode.removeChild(e[0]); }
+    function mk(w, text, leftPct, topPct, center, color) {
+      var s = document.createElement('span'); s.className = 'cv-label' + (center ? ' cv-label-center' : '');
+      s.style.left = leftPct.toFixed(2) + '%'; s.style.top = topPct.toFixed(2) + '%'; s.style.color = color; s.textContent = text; w.appendChild(s);
+    }
+    var yTop = Ny - 1 - (y0 + a / 2), yBot = Ny - 1 - (y0 - a / 2);
+    [wraps.inc, wraps.scat, wraps.tot].forEach(function (w) {
+      clear(w);
+      mk(w, '도선 벽', (xLeft + 4) / Nx * 100, (yTop - 14) / Ny * 100, false, '#9aa6d8');
+      mk(w, '도선 벽', (xLeft + 4) / Nx * 100, (yBot + 2) / Ny * 100, false, '#9aa6d8');
+      mk(w, '입구', xLeft / Nx * 100, 2, true, '#6a74a0');
+    });
+  }
   var API = { colorForValue: colorForValue, drawField: drawField, drawWireDots: drawWireDots,
               drawPlatesWire: drawPlatesWire, drawGraph: drawGraph, setPhasorLegend: setPhasorLegend,
-              drawSweep: drawSweep };
+              drawSweep: drawSweep, updateOverlays: updateOverlays };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else { global.WG = global.WG || {}; Object.assign(global.WG, API); }
 })(typeof globalThis !== 'undefined' ? globalThis : this);
