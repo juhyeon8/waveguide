@@ -33,7 +33,16 @@ input[type="range"] { width: 100%; }
 .gauge { width: 100%; height: 16px; background: #0a0e1c; border: 1px solid #3a4270; border-radius: 8px; overflow: hidden; }
 .gauge-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #5b9bff, #7fd6ff); transition: width 0.15s; }
 
-.panels { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }  /* 단일 열 */
+/* 도체판 근사 상태 배지 (d/λ 기준) — 비어 있으면 숨김, main.js가 good/warn/bad 클래스 부여 */
+.plate-badge { margin-top: 10px; padding: 9px 11px; border-radius: 8px; font-size: 0.92rem;
+  font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.plate-badge:empty { display: none; }
+.plate-badge.good { background: rgba(58,160,90,0.15); border: 1px solid #3aa05a; color: #8ff0b0; }
+.plate-badge.warn { background: rgba(200,160,60,0.15); border: 1px solid #c8a03c; color: #ffd479; }
+.plate-badge.bad  { background: rgba(200,80,80,0.15);  border: 1px solid #c85050; color: #ff9f9f; }
+
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }  /* 3행 2열 */
+.panel-sweep { grid-column: 1 / -1; }   /* ⑤ 스윕은 아래 한 줄 전폭 */
 .panel { background: #161b2e; border: 1px solid #2a3050; border-radius: 10px; padding: 14px 16px; }
 .panel h3 { margin: 0 0 8px; font-size: 1.05rem; color: #d6dcf7; }
 .panel h3 .sub { font-size: 0.82rem; color: #8892b5; font-weight: 400; }
@@ -42,9 +51,10 @@ input[type="range"] { width: 100%; }
 .cv-wrap canvas { width: 100%; height: auto; display: block; background: #0a0e1c; border-radius: 6px; }
 #cvInc, #cvScat, #cvTot { aspect-ratio: 520 / 220; }
 #cvGraph { aspect-ratio: 520 / 120; }
-#cvSweep { aspect-ratio: 520 / 240; }
+#cvSweep { aspect-ratio: 1040 / 240; }   /* 전폭 한 줄 */
 .cv-label { position: absolute; font-size: 0.74rem; line-height: 1; pointer-events: none; white-space: nowrap; }
 .cv-label-center { transform: translateX(-50%); }
 .stale { opacity: 0.35; }
 
-@media (max-width: 980px) { .app { grid-template-columns: 1fr; } .controls { position: static; } }
+@media (max-width: 980px) { .app { grid-template-columns: 1fr; } .controls { position: static; }
+  .panels { grid-template-columns: 1fr; } .panel-sweep { grid-column: auto; } }

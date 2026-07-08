@@ -50,7 +50,8 @@
       <div class="info" id="freqInfo"></div>
       <div class="info" id="kappaInfo"></div>
       <div class="info" id="kappaCompare"></div>
-      <div class="gauge-wrap"><div class="gauge-label">도체판 근사</div><div class="gauge"><div class="gauge-fill" id="plateGauge"></div></div></div>
+      <div class="plate-badge" id="plateBadge"></div>
+      <div class="gauge-wrap"><div class="gauge-label">도체판 근사 (측정 κ / 이론)</div><div class="gauge"><div class="gauge-fill" id="plateGauge"></div></div></div>
       <div class="note" id="plateGaugeCap"></div>
       <div class="info" id="leakInfo"></div>
       <div class="info" id="transInfo"></div>
@@ -66,8 +67,8 @@
   <main class="panels">
     <section class="panel"><h3>① 입사파 <span class="sub">평면파 또는 선원파만</span></h3><div class="cv-wrap"><canvas id="cvInc"></canvas></div>
       <p class="note" id="incCap"></p></section>
-    <section class="panel"><h3>② 산란파 <span class="sub">도선 표면 E=0이 강제한 산란파</span> <span id="phasorLegend" class="legend"></span></h3><div class="cv-wrap"><canvas id="cvScat"></canvas></div></section>
     <section class="panel"><h3>③ 전체장 <span class="sub">① + ② — 눈으로 더하면 이 그림</span></h3><div class="cv-wrap"><canvas id="cvTot"></canvas></div></section>
+    <section class="panel"><h3>② 산란파 <span class="sub">도선 표면 E=0이 강제한 산란파</span> <span id="phasorLegend" class="legend"></span></h3><div class="cv-wrap"><canvas id="cvScat"></canvas></div></section>
     <section class="panel"><h3>④ n=1 모드 진폭 |c₁(x)| <span class="sub">측정 실선 · 이론 점선</span></h3><div class="cv-wrap"><canvas id="cvGraph"></canvas></div>
       <p class="note">세로축은 이 그래프 자체 정규화 — 위 패널의 색 밝기와 직접 비교하지 말 것.</p></section>
     <section class="panel panel-sweep"><h3>⑤ 투과율 T vs λ/2a <span class="sub">d=5·10·20, 세로축 선형 %</span></h3><div class="cv-wrap"><canvas id="cvSweep"></canvas></div>
