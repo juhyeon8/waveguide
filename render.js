@@ -92,15 +92,24 @@
     // 차단선 λ/2a=1
     ctx.strokeStyle = 'rgba(255,179,122,0.5)'; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(X(1), y1); ctx.lineTo(X(1), y0p); ctx.stroke(); ctx.setLineDash([]);
-    if (!sweepData) { ctx.fillStyle = '#8892b5'; ctx.fillText('스윕 계산 버튼을 누르세요', (x0 + x1) / 2, (y0p + y1) / 2); return; }
     var colors = { 5: '#7fd6ff', 10: '#ffd479', 20: '#ff8f8f' };
+    // 선 색 범례 (도선 간격 d) — 오른쪽 위 빈 공간, 항상 표시
+    var legX = x0 + (x1 - x0) * 0.55, legY = y1 + 16;
+    ctx.textAlign = 'left'; ctx.font = '12px "Segoe UI",sans-serif';
+    ctx.fillStyle = '#aab2cf'; ctx.fillText('선 색 = 도선 간격 d (촘촘할수록 도체판)', legX, legY);
+    [{ d: 5, t: 'd=5 (촘촘)' }, { d: 10, t: 'd=10' }, { d: 20, t: 'd=20 (성김)' }].forEach(function (it, i) {
+      var yy = legY + 18 * (i + 1);
+      ctx.strokeStyle = colors[it.d]; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(legX, yy - 4); ctx.lineTo(legX + 24, yy - 4); ctx.stroke();
+      ctx.fillStyle = '#c3cae8'; ctx.fillText(it.t, legX + 32, yy);
+    });
+    ctx.font = '11px "Segoe UI",sans-serif';
+    if (!sweepData) { ctx.textAlign = 'center'; ctx.fillStyle = '#8892b5'; ctx.fillText('스윕 계산 버튼을 누르세요', (x0 + x1) / 2, (y0p + y1) / 2); return; }
     ctx.globalAlpha = stale ? 0.35 : 1;
     sweepData.curves.forEach(function (cv) {
       ctx.strokeStyle = colors[cv.d] || '#fff'; ctx.lineWidth = 2; ctx.beginPath();
       cv.pts.forEach(function (p, i) { var xx = X(p.r), yy = Y(Math.max(0, Math.min(1, p.T))); if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy); });
       ctx.stroke();
-      var last = cv.pts[cv.pts.length - 1];
-      if (last) { ctx.fillStyle = colors[cv.d]; ctx.textAlign = 'left'; ctx.fillText('d=' + cv.d, X(last.r) + 4, Y(last.T)); }
     });
     ctx.globalAlpha = 1;
     // 현재 λ 마커
