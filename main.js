@@ -2,13 +2,30 @@
   'use strict';
   var WGc = WireWG;      // 물리 코어
   var xLeft = 110, xRight = 110, Ny = 220, y0 = 110;
-  function refreshSweepStale() {}
 
   var state = { lambda: 140, a: 60, d: 5, aw: 0.8, L: 300, inc: 'plane',
                 phase: 0, dPhi: 0.15, paused: false };
   var built = null;   // {Nx, wiresPix, cre, cim, inc, scat, tot, amp, info}
   var el = function (id) { return document.getElementById(id); };
   var cv = { inc: el('cvInc'), scat: el('cvScat'), tot: el('cvTot'), graph: el('cvGraph') };
+
+  var sweepData = null, sweepStale = false, cvSweep = el('cvSweep');
+  cvSweep.width = 1040; cvSweep.height = 240;
+  function drawSweepPanel() {
+    WG.drawSweep(cvSweep.getContext('2d'), sweepData, state.lambda, state.a, sweepStale);
+  }
+  function refreshSweepStale() {
+    if (sweepData && (sweepData.a !== state.a || sweepData.L !== state.L)) sweepStale = true;
+    drawSweepPanel();
+  }
+  el('sweepBtn').addEventListener('click', function () {
+    if (state.inc !== 'plane') return;
+    el('sweepBtn').disabled = true;
+    WG.runSweep({ a: state.a, L: state.L, aw: state.aw, xLeft: xLeft, y0: y0, Ny: Ny },
+      function (frac) { el('sweepStatus').textContent = '스윕 계산 중… ' + Math.round(frac * 100) + '%'; },
+      function (data) { sweepData = data; sweepStale = false; el('sweepStatus').textContent = '완료';
+        el('sweepBtn').disabled = (state.inc !== 'plane'); drawSweepPanel(); });
+  });
 
   function geom() { return { Nx: built.Nx, Ny: Ny, y0: y0, a: state.a, xLeft: xLeft, L: state.L }; }
 
@@ -148,7 +165,7 @@
       el('kappaCompare').textContent += '  ⚠ 얇은 도선 근사 경계';
   }
 
-  function recompute() { clampLambda(); rebuild(); syncReadouts(); updateInfo(); refreshSweepStale(); }
+  function recompute() { clampLambda(); rebuild(); syncReadouts(); updateInfo(); drawSweepPanel(); refreshSweepStale(); }
 
   function applyPreset(p) {
     if (p === 'prop') { state.a = 60; state.d = 5; state.lambda = 90; }

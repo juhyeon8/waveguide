@@ -73,8 +73,46 @@
       : '위상자: 벽 따라 위상 전진';
     el.style.opacity = evanescent ? '0.7' : '1';
   }
+  function drawSweep(ctx, sweepData, curLambda, a, stale) {
+    var W = ctx.canvas.width, H = ctx.canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    var padL = 44, padB = 26, padT = 12, padR = 12;
+    var x0 = padL, x1 = W - padR, y0p = H - padB, y1 = padT;
+    var rMin = 0.7, rMax = 2.0;
+    function X(r) { return x0 + (r - rMin) / (rMax - rMin) * (x1 - x0); }
+    function Y(T) { return y0p - T * (y0p - y1); }
+    // 축
+    ctx.strokeStyle = '#3a4270'; ctx.lineWidth = 1;
+    ctx.strokeRect(x0, y1, x1 - x0, y0p - y1);
+    ctx.fillStyle = '#8892b5'; ctx.font = '11px "Segoe UI",sans-serif'; ctx.textAlign = 'center';
+    [0.7, 1.0, 1.5, 2.0].forEach(function (r) { ctx.fillText(r.toFixed(1), X(r), H - 10); });
+    ctx.textAlign = 'right';
+    [0, 0.5, 1.0].forEach(function (T) { ctx.fillText((T * 100) + '%', x0 - 5, Y(T) + 4); });
+    ctx.textAlign = 'center'; ctx.fillText('λ / 2a', (x0 + x1) / 2, H - 1);
+    // 차단선 λ/2a=1
+    ctx.strokeStyle = 'rgba(255,179,122,0.5)'; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(X(1), y1); ctx.lineTo(X(1), y0p); ctx.stroke(); ctx.setLineDash([]);
+    if (!sweepData) { ctx.fillStyle = '#8892b5'; ctx.fillText('스윕 계산 버튼을 누르세요', (x0 + x1) / 2, (y0p + y1) / 2); return; }
+    var colors = { 5: '#7fd6ff', 10: '#ffd479', 20: '#ff8f8f' };
+    ctx.globalAlpha = stale ? 0.35 : 1;
+    sweepData.curves.forEach(function (cv) {
+      ctx.strokeStyle = colors[cv.d] || '#fff'; ctx.lineWidth = 2; ctx.beginPath();
+      cv.pts.forEach(function (p, i) { var xx = X(p.r), yy = Y(Math.max(0, Math.min(1, p.T))); if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy); });
+      ctx.stroke();
+      var last = cv.pts[cv.pts.length - 1];
+      if (last) { ctx.fillStyle = colors[cv.d]; ctx.textAlign = 'left'; ctx.fillText('d=' + cv.d, X(last.r) + 4, Y(last.T)); }
+    });
+    ctx.globalAlpha = 1;
+    // 현재 λ 마커
+    if (curLambda && a) {
+      var r = curLambda / (2 * a);
+      ctx.strokeStyle = '#e8ebf5'; ctx.setLineDash([2, 2]);
+      ctx.beginPath(); ctx.moveTo(X(r), y1); ctx.lineTo(X(r), y0p); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
   var API = { colorForValue: colorForValue, drawField: drawField, drawWireDots: drawWireDots,
-              drawPlatesWire: drawPlatesWire, drawGraph: drawGraph, setPhasorLegend: setPhasorLegend };
+              drawPlatesWire: drawPlatesWire, drawGraph: drawGraph, setPhasorLegend: setPhasorLegend,
+              drawSweep: drawSweep };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else { global.WG = global.WG || {}; Object.assign(global.WG, API); }
 })(typeof globalThis !== 'undefined' ? globalThis : this);
