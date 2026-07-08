@@ -92,7 +92,8 @@
       var kz = WG.measureKzFromGrid(b.tot, y0, state.a, state.L, xLeft);
       el('kappaInfo').textContent = 'k_z(이론) = ' + (info.kguide / 2).toFixed(4) + ' /mm';
       var pct2 = kz / info.kguide * 100;
-      el('kappaCompare').textContent = '측정 k_z = ' + (kz / 2).toFixed(4) + ' /mm  (' + pct2.toFixed(0) + '%)';
+      el('kappaCompare').textContent = '측정 k_z = ' + (kz / 2).toFixed(4) + ' /mm  (' + pct2.toFixed(0) + '%)'
+        + ((pct2 > 85 && pct2 < 115) ? '' : '  ⚠ d 감소 권장');
       el('kappaCompare').style.color = (pct2 > 85 && pct2 < 115) ? '' : '#f4a261';
       el('plateGauge').style.width = Math.max(0, Math.min(100, pct2)).toFixed(0) + '%';
     }
