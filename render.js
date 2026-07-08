@@ -66,8 +66,15 @@
     }
     ctx.stroke();
   }
+  function setPhasorLegend(el, evanescent) {
+    if (!el) return;
+    el.textContent = evanescent
+      ? '위상자: 전 도선 동위상 (안쪽으로 감쇠)'
+      : '위상자: 벽 따라 위상 전진';
+    el.style.opacity = evanescent ? '0.7' : '1';
+  }
   var API = { colorForValue: colorForValue, drawField: drawField, drawWireDots: drawWireDots,
-              drawPlatesWire: drawPlatesWire, drawGraph: drawGraph };
+              drawPlatesWire: drawPlatesWire, drawGraph: drawGraph, setPhasorLegend: setPhasorLegend };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else { global.WG = global.WG || {}; Object.assign(global.WG, API); }
 })(typeof globalThis !== 'undefined' ? globalThis : this);
