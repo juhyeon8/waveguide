@@ -15,6 +15,7 @@
     var s = state, k = 2 * Math.PI / s.lambda, Nx = xLeft + s.L + xRight;
     var wires = WGc.buildWires(s.a, s.L, s.d, s.aw);
     var wiresPix = wires.map(function (w) { return { x: w.x, y: y0 + w.y, aw: w.aw }; });
+    var wiresPixDraw = wiresPix.map(function (w) { return { x: w.x + xLeft, y: w.y }; });
     var incFnCell = (s.inc === 'plane')
       ? function (x, y) { return WGc.incPlane(k, x, y); }
       : function (x, y) { return WGc.incLine(k, -80, 0, x, y); };
@@ -25,7 +26,7 @@
     var tot = WG.addComplex(WG.makeField(Nx, Ny), inc, scat);
     var amp = WG.modeCoefGrid(tot, y0, s.a);
     var info = WGc.cutoffInfo(s.lambda, s.a);
-    built = { Nx: Nx, wiresPix: wiresPix, cre: sol[0], cim: sol[1],
+    built = { Nx: Nx, wiresPix: wiresPix, wiresPixDraw: wiresPixDraw, cre: sol[0], cim: sol[1],
               inc: inc, scat: scat, tot: tot, amp: amp, info: info };
     [cv.inc, cv.scat, cv.tot].forEach(function (c) { c.width = Nx; c.height = Ny; });
     cv.graph.width = Nx; cv.graph.height = 120;
@@ -38,8 +39,8 @@
     var gi = cv.inc.getContext('2d'), gs = cv.scat.getContext('2d'), gt = cv.tot.getContext('2d');
     WG.drawField(gi, b.inc, 1, ph); WG.drawField(gs, b.scat, 1, ph); WG.drawField(gt, b.tot, 1, ph);
     WG.drawPlatesWire(gi, g); WG.drawPlatesWire(gs, g); WG.drawPlatesWire(gt, g);
-    WG.drawWireDots(gs, b.wiresPix, b.cre, b.cim, ph, 1, Ny);
-    WG.drawWireDots(gt, b.wiresPix, b.cre, b.cim, ph, 1, Ny);
+    WG.drawWireDots(gs, b.wiresPixDraw, b.cre, b.cim, ph, 1, Ny);
+    WG.drawWireDots(gt, b.wiresPixDraw, b.cre, b.cim, ph, 1, Ny);
     var refIPix = xLeft + Math.round(0.12 * state.L);
     WG.drawGraph(cv.graph.getContext('2d'), b.amp, refIPix, b.info.evanescent ? b.info.kappa : null, g);
     requestAnimationFrame(frame);
