@@ -1,6 +1,5 @@
 (function (global) {
   'use strict';
-  var core = (typeof require !== 'undefined') ? null : null; // 브라우저는 WireWG 전역 사용
 
   // 그리드 |c₁(x)|: sin 투영, /span 정규화 (reference modeCoefficient와 동일)
   function modeCoefGrid(field, y0, a) {

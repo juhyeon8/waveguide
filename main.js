@@ -94,7 +94,6 @@
     el('cutoffBadge').textContent = info.evanescent ? '차단: λ > 2a → 감쇠파' : '전파: λ < 2a → 모드 진행';
     el('cutoffBadge').style.color = info.evanescent ? '#ffb37a' : '#7fd6ff';
 
-    var refI = xLeft + Math.round(0.12 * state.L);
     if (info.evanescent) {
       el('kappaInfo').textContent = '이론 κ = ' + (info.kappa / 2).toFixed(4) + ' /mm';
       var m = WG.measureKappa(b.amp, state.L, info.kappa, xLeft);
@@ -139,7 +138,8 @@
         el('transInfo').textContent = '진폭 감쇠 ≈ ' + (dB / 2).toFixed(1) + ' dB (L=' + Lmm + 'mm 기준), '
           + (dB / Lmm).toFixed(3) + ' dB/mm';
       } else {
-        el('transInfo').textContent = '전력 투과율 T = ' + (WG.transmittance(b.amp, state.L, xLeft) * 100).toFixed(1) + ' %';
+        el('transInfo').innerHTML = '전력 투과율 T = ' + (WG.transmittance(b.amp, state.L, xLeft) * 100).toFixed(1) + ' %'
+          + '<br><span style="color:#8892b5;font-size:0.85rem">※ 측정 |c₁| 비 — 입구 정재파로 100% 초과 가능(실제 전력 이득 아님)</span>';
       }
     } else { el('transInfo').style.display = 'none'; }
 
