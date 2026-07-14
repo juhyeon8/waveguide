@@ -33,7 +33,15 @@
     return [sr / span, si / span];
   }
 
-  var API = { dAuto: dAuto, modeCoefGridN: modeCoefGridN, modeCoefComplexAtN: modeCoefComplexAtN };
+  function _kc(n, a) { return n * Math.PI / a; }
+  function theoryKappa(n, a, k) { var kc = _kc(n, a); return (k < kc) ? Math.sqrt(kc * kc - k * k) : null; }
+  function theoryKz(n, a, k) { var kc = _kc(n, a); return (k > kc) ? Math.sqrt(k * k - kc * kc) : null; }
+  function theoryPropAmp(n, y0spec, a, k) {
+    var kz = theoryKz(n, a, k); if (kz === null || kz < 1e-12) return null;
+    return Math.abs(Math.sin(n * Math.PI * y0spec / a)) / kz;
+  }
+
+  var API = { dAuto: dAuto, modeCoefGridN: modeCoefGridN, modeCoefComplexAtN: modeCoefComplexAtN, theoryKappa: theoryKappa, theoryKz: theoryKz, theoryPropAmp: theoryPropAmp };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else { global.WGM = global.WGM || {}; Object.assign(global.WGM, API); }
 })(typeof globalThis !== 'undefined' ? globalThis : this);
