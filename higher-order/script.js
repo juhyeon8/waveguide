@@ -19,26 +19,27 @@
   }
 
   var A = CFG.a;
-  function lamCells() { return state.lambda; } // state.lambda는 이미 셀 단위로 저장
   function syncReadouts() {
     el('lambdaVal').textContent = (state.lambda / A).toFixed(2) + ' a  (' + state.lambda.toFixed(0) + ' 셀)';
     el('y0Val').textContent = (state.y0spec / A).toFixed(2) + ' a';
-    el('dVal').textContent = currentD().toFixed(2) + ' 셀 (d/λ=' + (currentD() / state.lambda).toFixed(3) + ')';
+    var d = currentD();
+    el('dVal').textContent = d.toFixed(2) + ' 셀 (d/λ=' + (d / state.lambda).toFixed(3) + ')';
     el('dWire').disabled = state.dAutoOn;
   }
   var timer = null;
   function scheduleRebuild() { if (timer) clearTimeout(timer);
     timer = setTimeout(function () { rebuild(); timer = null; }, 150); }
+  function rebuildNow() { if (timer) { clearTimeout(timer); timer = null; } rebuild(); }
   el('lambda').addEventListener('input', function (e) {
     state.lambda = (+e.target.value) * A; syncReadouts(); scheduleRebuild(); });
   el('y0').addEventListener('input', function (e) {
     state.y0spec = (+e.target.value) * A; syncReadouts(); scheduleRebuild(); });
   el('centerBtn').addEventListener('click', function () {
-    state.y0spec = A / 2; el('y0').value = 0.5; syncReadouts(); rebuild(); });
+    state.y0spec = A / 2; el('y0').value = 0.5; syncReadouts(); rebuildNow(); });
   el('dWire').addEventListener('input', function (e) {
     state.dManual = +e.target.value; syncReadouts(); scheduleRebuild(); });
   el('dAuto').addEventListener('change', function (e) {
-    state.dAutoOn = e.target.checked; syncReadouts(); rebuild(); });
+    state.dAutoOn = e.target.checked; syncReadouts(); rebuildNow(); });
   el('pauseBtn').addEventListener('click', function () {
     state.paused = !state.paused; el('pauseBtn').textContent = state.paused ? '▶ 재개' : '⏸ 일시정지'; });
   el('speed').addEventListener('input', function (e) { state.dPhi = +e.target.value; });
@@ -47,7 +48,7 @@
     var m = { '1': [2.4, null], '2': [1.5, null], '3': [0.8, 0.25], '4': [0.55, 1 / 6] };
     var v = m[id]; state.lambda = v[0] * A;
     if (v[1] !== null) { state.y0spec = v[1] * A; el('y0').value = v[1]; }
-    el('lambda').value = v[0]; syncReadouts(); rebuild();
+    el('lambda').value = v[0]; syncReadouts(); rebuildNow();
   }
   Array.prototype.forEach.call(document.querySelectorAll('[data-preset]'), function (b) {
     b.addEventListener('click', function () { applyPreset(b.getAttribute('data-preset')); });
