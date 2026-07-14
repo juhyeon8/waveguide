@@ -73,11 +73,13 @@
     return (s === null) ? null : -s;
   }
   function measureKzN(field, y0, a, n, xLeft, win) {
+    if (!win.valid) return null;
     var xs = [], phis = [];
     for (var xc = win.zStart; xc <= win.zEnd; xc += 1) {
       var c = modeCoefComplexAtN(field, y0, a, Math.round(xc) + xLeft, n);
       xs.push(xc); phis.push(Math.atan2(c[1], c[0]));
     }
+    if (xs.length < 2) return null;
     for (var i = 1; i < phis.length; i++) {
       while (phis[i] - phis[i - 1] > Math.PI) phis[i] -= 2 * Math.PI;
       while (phis[i] - phis[i - 1] < -Math.PI) phis[i] += 2 * Math.PI;

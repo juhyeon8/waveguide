@@ -17,4 +17,10 @@ assert(!isNaN(w4.zStart), 'NaN→NaN 아님');
 // 중간 κ: z0 + 2/0.05 = 36+40 = 76, 0.2L=60 → 76
 var w5 = WGM.fitWindowZ(z0, L, 0.05);
 assert(Math.abs(w5.zStart - 76) < 1e-9, '중간κ: ' + w5.zStart);
+
+// Test measureKzN guards (win.valid and minimum points)
+var badWin = { zStart: 100, zEnd: 50, valid: false };
+var dummyField = { re: new Float64Array(300 * 300), im: new Float64Array(300 * 300), Nx: 300, Ny: 300 };
+assert(WGM.measureKzN(dummyField, 110, 60, 1, 110, badWin) === null, 'measureKzN invalid win → null');
+
 console.log('PASS: fitWindowZ (NaN 분기 포함)');
