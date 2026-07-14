@@ -17,6 +17,44 @@
     window.__scene = s;
     if (window.__afterRebuild) window.__afterRebuild(s); // Task 9·10에서 그래프·판독 갱신
   }
+
+  var A = CFG.a;
+  function lamCells() { return state.lambda; } // state.lambda는 이미 셀 단위로 저장
+  function syncReadouts() {
+    el('lambdaVal').textContent = (state.lambda / A).toFixed(2) + ' a  (' + state.lambda.toFixed(0) + ' 셀)';
+    el('y0Val').textContent = (state.y0spec / A).toFixed(2) + ' a';
+    el('dVal').textContent = currentD().toFixed(2) + ' 셀 (d/λ=' + (currentD() / state.lambda).toFixed(3) + ')';
+    el('dWire').disabled = state.dAutoOn;
+  }
+  var timer = null;
+  function scheduleRebuild() { if (timer) clearTimeout(timer);
+    timer = setTimeout(function () { rebuild(); timer = null; }, 150); }
+  el('lambda').addEventListener('input', function (e) {
+    state.lambda = (+e.target.value) * A; syncReadouts(); scheduleRebuild(); });
+  el('y0').addEventListener('input', function (e) {
+    state.y0spec = (+e.target.value) * A; syncReadouts(); scheduleRebuild(); });
+  el('centerBtn').addEventListener('click', function () {
+    state.y0spec = A / 2; el('y0').value = 0.5; syncReadouts(); rebuild(); });
+  el('dWire').addEventListener('input', function (e) {
+    state.dManual = +e.target.value; syncReadouts(); scheduleRebuild(); });
+  el('dAuto').addEventListener('change', function (e) {
+    state.dAutoOn = e.target.checked; syncReadouts(); rebuild(); });
+  el('pauseBtn').addEventListener('click', function () {
+    state.paused = !state.paused; el('pauseBtn').textContent = state.paused ? '▶ 재개' : '⏸ 일시정지'; });
+  el('speed').addEventListener('input', function (e) { state.dPhi = +e.target.value; });
+
+  function applyPreset(id) {
+    var m = { '1': [2.4, null], '2': [1.5, null], '3': [0.8, 0.25], '4': [0.55, 1 / 6] };
+    var v = m[id]; state.lambda = v[0] * A;
+    if (v[1] !== null) { state.y0spec = v[1] * A; el('y0').value = v[1]; }
+    el('lambda').value = v[0]; syncReadouts(); rebuild();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-preset]'), function (b) {
+    b.addEventListener('click', function () { applyPreset(b.getAttribute('data-preset')); });
+  });
+  // 초기: state.lambda를 셀 단위로 세팅(슬라이더 기본 1.5a)
+  state.lambda = 1.5 * A; state.y0spec = 0.5 * A; syncReadouts();
+
   function autoScale(field) { // 완전 차단 대비: 관찰 구간 근처 최대에 스케일
     var Ny = field.Ny, re = field.re, im = field.im, mx = 1e-6;
     var i0 = CFG.xLeft, i1 = CFG.xLeft + Math.round(0.4 * CFG.L);

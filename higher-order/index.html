@@ -8,7 +8,27 @@
 <p class="sub">벽=두 줄 도선, 각 도선 표면 경계조건으로 산란파 결정(MoM). 내부 장 = 입사파+산란파.
 모드 분해는 n=1–3만 표시(n≥4 미표시).</p>
 <div class="stage"><div class="cvwrap"><canvas id="cvTot"></canvas></div></div>
-<div id="controls"></div>
+<div id="controls">
+  <div class="row"><label>λ / a</label>
+    <input id="lambda" type="range" min="0.4" max="2.5" step="0.01" value="1.5">
+    <span id="lambdaVal"></span></div>
+  <div class="row"><label>소스 y₀ / a</label>
+    <input id="y0" type="range" min="0.05" max="0.95" step="0.01" value="0.5">
+    <span id="y0Val"></span><button id="centerBtn">중심으로</button></div>
+  <div class="row"><label>도선 간격 d</label>
+    <input id="dWire" type="range" min="2" max="20" step="1" value="5" disabled>
+    <span id="dVal"></span>
+    <label style="min-width:auto"><input id="dAuto" type="checkbox" checked> 자동(d=0.08λ)</label></div>
+  <div class="row"><label>프리셋</label>
+    <button data-preset="1">① 완전차단 2.4a</button>
+    <button data-preset="2">② 단일모드 1.5a</button>
+    <button data-preset="3">③ 2모드 0.8a·y₀=a/4</button>
+    <button data-preset="4">④ 3모드 0.55a·y₀=a/6</button></div>
+  <div class="row">
+    <button id="pauseBtn">⏸ 일시정지</button>
+    <label style="min-width:auto">속도</label>
+    <input id="speed" type="range" min="0" max="0.4" step="0.01" value="0.15"></div>
+</div>
 <div class="stage"><canvas id="cvGraph" width="620" height="240"></canvas></div>
 <div id="readouts"></div>
 <script src="../core.js"></script>
