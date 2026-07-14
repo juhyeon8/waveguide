@@ -89,7 +89,21 @@
     return Math.abs((m * sxy - sx * sy) / (m * sxx - sx * sx));
   }
 
-  var API = { dAuto: dAuto, modeCoefGridN: modeCoefGridN, modeCoefComplexAtN: modeCoefComplexAtN, theoryKappa: theoryKappa, theoryKz: theoryKz, theoryPropAmp: theoryPropAmp, fitWindowZ: fitWindowZ, measureKappaN: measureKappaN, measureKzN: measureKzN };
+  function wallTransmittanceT(core, a, L, d, aw, k) {
+    var wires = [], nW = Math.round(L / d) + 1;
+    for (var i = 0; i < nW; i++) wires.push({ x: i * d, y: 0, aw: aw });
+    var inc = function (x, y) { return [Math.cos(k * y), Math.sin(k * y)]; }; // +y 진행, 벽에 수직
+    var sol = core.solveMoM(wires, k, inc), cre = sol[0], cim = sol[1];
+    var yProbe = Math.max(5, Math.round(d));
+    var z0 = 0.25 * L, z1 = 0.75 * L, s = 0, cnt = 0;
+    for (var z = z0; z <= z1; z += 1) {
+      var e = core.totalField(wires, cre, cim, k, inc, z, yProbe);
+      s += Math.sqrt(e[0] * e[0] + e[1] * e[1]); cnt++;
+    }
+    return cnt ? s / cnt : 0;
+  }
+
+  var API = { dAuto: dAuto, modeCoefGridN: modeCoefGridN, modeCoefComplexAtN: modeCoefComplexAtN, theoryKappa: theoryKappa, theoryKz: theoryKz, theoryPropAmp: theoryPropAmp, fitWindowZ: fitWindowZ, measureKappaN: measureKappaN, measureKzN: measureKzN, wallTransmittanceT: wallTransmittanceT };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else { global.WGM = global.WGM || {}; Object.assign(global.WGM, API); }
 })(typeof globalThis !== 'undefined' ? globalThis : this);
