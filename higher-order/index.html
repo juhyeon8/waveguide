@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>도체도선배열을 이용한 입사파-산란파 중첩 모형</title>
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<h1>도체도선배열을 이용한 입사파-산란파 중첩 모형</h1>
+<p class="sub">벽=두 줄 도선, 각 도선 표면 경계조건으로 산란파 결정(MoM). 내부 장 = 입사파+산란파.
+모드 분해는 n=1–3만 표시(n≥4 미표시).</p>
+<div class="stage"><div class="cvwrap"><canvas id="cvTot"></canvas></div></div>
+<div id="controls"></div>
+<div class="stage"><canvas id="cvGraph" width="620" height="240"></canvas></div>
+<div id="readouts"></div>
+<script src="../core.js"></script>
+<script src="../hankel.js"></script>
+<script src="../field.js"></script>
+<script src="../render.js"></script>
+<script src="modes.js"></script>
+<script src="script.js"></script>
+</body></html>
