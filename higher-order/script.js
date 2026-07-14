@@ -81,5 +81,9 @@
   }
 
   window.__hoState = state; window.__hoRebuild = rebuild; window.__hoCFG = CFG; window.__hoCurrentD = currentD;
+  window.__afterRebuild = function (s) {
+    var g = el('cvGraph').getContext('2d');
+    WG.drawModeGraph(g, s, CFG);
+  };
   rebuild(); requestAnimationFrame(frame);
 })();
