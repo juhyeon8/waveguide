@@ -80,10 +80,42 @@
     requestAnimationFrame(frame);
   }
 
+  function renderReadouts(s) {
+    var a = CFG.a, k = s.k, y0spec = state.y0spec, xLeft = CFG.xLeft, y0pix = CFG.y0pix, L = CFG.L;
+    var kappas = [1, 2, 3].map(function (n) { return WGM.theoryKappa(n, a, k); }).filter(function (v) { return v; });
+    var kappaMin = kappas.length ? Math.min.apply(null, kappas) : null;
+    var win = WGM.fitWindowZ(CFG.z0, L, kappaMin);
+    var html = '<div class="row"><b>벽 무결성</b>: |T|=' + s.wallT.toFixed(3) +
+      ' , d/λ=' + s.dOverLambda.toFixed(3) +
+      (s.dOverLambda > 0.1 || s.wallT > 0.35 ? ' <span class="warn">⚠ 벽 근사 무너짐</span>' : '') + '</div>';
+    [1, 2, 3].forEach(function (n) {
+      var coup = Math.abs(Math.sin(n * Math.PI * y0spec / a));
+      var line = '<div class="row mode' + n + '">mode ' + n +
+        ': 결합 |sin(nπy₀/a)|=' + coup.toFixed(3);
+      if (coup < 0.02) { line += ' — <b>여기되지 않음(마디 위치)</b>'; }
+      else {
+        var kz = WGM.theoryKz(n, a, k), kap = WGM.theoryKappa(n, a, k);
+        if (kz) {
+          var amp = WGM.modeCoefGridN(s.tot, y0pix, a, n);
+          var mkz = WGM.measureKzN(s.tot, y0pix, a, n, xLeft, win);
+          line += ' — 전파: k_z 측정 ' + (mkz != null ? mkz.toFixed(4) : '—') + ' / 이론 ' + kz.toFixed(4) +
+            (mkz != null ? ' (' + (mkz / kz * 100).toFixed(0) + '%)' : '');
+        } else if (kap) {
+          var amp2 = WGM.modeCoefGridN(s.tot, y0pix, a, n);
+          var mkap = WGM.measureKappaN(amp2, xLeft, win);
+          line += ' — 차단: κ 측정 ' + (mkap ? mkap.toFixed(4) : '—') + ' / 이론 ' + kap.toFixed(4) +
+            (mkap ? ' (' + (mkap / kap * 100).toFixed(0) + '%)' : '');
+        }
+      }
+      html += line + '</div>';
+    });
+    el('readouts').innerHTML = html;
+  }
+
   window.__hoState = state; window.__hoRebuild = rebuild; window.__hoCFG = CFG; window.__hoCurrentD = currentD;
   window.__afterRebuild = function (s) {
-    var g = el('cvGraph').getContext('2d');
-    WG.drawModeGraph(g, s, CFG);
+    WG.drawModeGraph(el('cvGraph').getContext('2d'), s, CFG);
+    renderReadouts(s);
   };
   rebuild(); requestAnimationFrame(frame);
 })();
