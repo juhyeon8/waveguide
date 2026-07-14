@@ -103,7 +103,27 @@
     return cnt ? s / cnt : 0;
   }
 
-  var API = { dAuto: dAuto, modeCoefGridN: modeCoefGridN, modeCoefComplexAtN: modeCoefComplexAtN, theoryKappa: theoryKappa, theoryKz: theoryKz, theoryPropAmp: theoryPropAmp, fitWindowZ: fitWindowZ, measureKappaN: measureKappaN, measureKzN: measureKzN, wallTransmittanceT: wallTransmittanceT };
+  function computeScene(core, WG, p) {
+    var k = 2 * Math.PI / p.lambda, Nx = p.xLeft + p.L + p.xRight;
+    var y0cell = p.y0spec - p.a / 2;
+    var incFn = function (x, y) { return core.incLine(k, p.z0, y0cell, x, y); };
+    var wires = core.buildWires(p.a, p.L, p.d, p.aw);
+    var wiresPix = wires.map(function (w) { return { x: w.x, y: p.y0pix + w.y, aw: w.aw }; });
+    var wiresPixDraw = wiresPix.map(function (w) { return { x: w.x + p.xLeft, y: w.y }; });
+    var sol = core.solveMoM(wires, k, incFn);
+    var table = WG.buildHankelTable(k, Nx + p.Ny + 20);
+    var inc = WG.computeIncidentGrid(WG.makeField(Nx, p.Ny), incFn, p.xLeft, p.y0pix);
+    var scat = WG.computeScatteredGrid(WG.makeField(Nx, p.Ny), wiresPix, sol[0], sol[1], table, p.xLeft);
+    var tot = WG.addComplex(WG.makeField(Nx, p.Ny), inc, scat);
+    return {
+      Nx: Nx, Ny: p.Ny, k: k, d: p.d, wiresPix: wiresPix, wiresPixDraw: wiresPixDraw,
+      cre: sol[0], cim: sol[1], inc: inc, scat: scat, tot: tot,
+      info: core.cutoffInfo(p.lambda, p.a), dOverLambda: p.d / p.lambda,
+      wallT: wallTransmittanceT(core, p.a, p.L, p.d, p.aw, k)
+    };
+  }
+
+  var API = { dAuto: dAuto, modeCoefGridN: modeCoefGridN, modeCoefComplexAtN: modeCoefComplexAtN, theoryKappa: theoryKappa, theoryKz: theoryKz, theoryPropAmp: theoryPropAmp, fitWindowZ: fitWindowZ, measureKappaN: measureKappaN, measureKzN: measureKzN, wallTransmittanceT: wallTransmittanceT, computeScene: computeScene };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else { global.WGM = global.WGM || {}; Object.assign(global.WGM, API); }
 })(typeof globalThis !== 'undefined' ? globalThis : this);
