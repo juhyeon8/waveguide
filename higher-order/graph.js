@@ -55,11 +55,13 @@
       // 이론 점선
       var kap = WGM.theoryKappa(n, a, k), kz = WGM.theoryKz(n, a, k);
       ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]); ctx.beginPath();
-      if (kap) { // 차단: 관찰 시작 실측값에 앵커한 e^{-κz}
-        var anchor = amps[n][refIPix];
-        for (var zc2 = win.zStart; zc2 <= L; zc2 += 1) {
-          var tv = anchor * Math.exp(-kap * (zc2 - win.zStart));
-          if (zc2 === win.zStart) ctx.moveTo(X(zc2), Y(tv)); else ctx.lineTo(X(zc2), Y(tv));
+      if (kap) { // 차단: per-mode κ 창 시작 실측값에 앵커한 e^{-κz}
+        var kwin = WGM.kappaWindowN(L, kap, s.d);
+        var anchorI = Math.round(kwin.zStart) + xLeft;
+        var anchor = amps[n][anchorI];
+        for (var zc2 = kwin.zStart; zc2 <= L; zc2 += 1) {
+          var tv = anchor * Math.exp(-kap * (zc2 - kwin.zStart));
+          if (zc2 === kwin.zStart) ctx.moveTo(X(zc2), Y(tv)); else ctx.lineTo(X(zc2), Y(tv));
         }
       } else if (kz) { // 전파: 수평선. 높이는 mode1 대비 상대비, 전체는 mode1 실측 평균에 앵커
         var h = theoryHeight(n, s, CFG, win, amps, xLeft);

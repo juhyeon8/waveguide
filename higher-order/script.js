@@ -102,9 +102,15 @@
             (mkz != null ? ' (' + (mkz / kz * 100).toFixed(0) + '%)' : '');
         } else if (kap) {
           var amp2 = WGM.modeCoefGridN(s.tot, y0pix, a, n);
-          var mkap = WGM.measureKappaN(amp2, xLeft, win);
-          line += ' — 차단: κ 측정 ' + (mkap ? mkap.toFixed(4) : '—') + ' / 이론 ' + kap.toFixed(4) +
-            (mkap ? ' (' + (mkap / kap * 100).toFixed(0) + '%)' : '');
+          var kwin = WGM.kappaWindowN(L, kap, s.d);
+          var mkap = WGM.measureKappaN(amp2, xLeft, kwin);
+          if (mkap != null) {
+            line += ' — 차단: κ 측정 ' + mkap.toFixed(4) + ' / 이론 ' + kap.toFixed(4) +
+              ' (' + (mkap / kap * 100).toFixed(0) + '%)';
+          } else {
+            line += ' — 차단: 이론 κ ' + kap.toFixed(4) + ' — <b>측정 불가</b>(감쇠길이 1/κ=' +
+              (1 / kap).toFixed(1) + '셀 < 도선간격 d=' + s.d.toFixed(1) + '셀, 분해능 한계)';
+          }
         }
       }
       html += line + '</div>';
