@@ -87,7 +87,7 @@
     var win = WGM.fitWindowZ(CFG.z0, L, kappaMin);
     var html = '<div class="row"><b>벽 무결성</b>: |T|=' + s.wallT.toFixed(3) +
       ' , d/λ=' + s.dOverLambda.toFixed(3) +
-      (s.dOverLambda > 0.1 || s.wallT > 0.35 ? ' <span class="warn">⚠ 벽 근사 무너짐</span>' : '') + '</div>';
+      (s.dOverLambda > 0.1 || s.wallT > 0.35 ? ' <span class="warn">⚠ 벽 근사 무너짐</span>' : '') + ' — 차단 κ 정확도는 |T|보다 엄격(모드 분해 신뢰 d/λ≲0.06)' + '</div>';
     [1, 2, 3].forEach(function (n) {
       var coup = Math.abs(Math.sin(n * Math.PI * y0spec / a));
       var line = '<div class="row mode' + n + '">mode ' + n +
