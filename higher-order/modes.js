@@ -3,7 +3,7 @@
   // 진행축 z를 core.js의 위치 첫 인자(x)에 그대로 전달한다 (좌표 어댑터).
 
   function dAuto(lambda, L, Nmax) {
-    var floor = L / Nmax, cap = 0.1 * lambda, target = 0.08 * lambda;
+    var floor = L / Nmax, cap = 0.1 * lambda, target = 0.055 * lambda;
     return Math.min(cap, Math.max(target, floor));
   }
 

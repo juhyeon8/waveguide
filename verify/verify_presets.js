@@ -21,9 +21,17 @@ function run(name, ratio, y0ratio) {
     if (coup < 0.02) msg += '여기 안됨(마디)';
     else if (kz) { var m = WGM.measureKzN(s.tot, CFG.y0pix, CFG.a, n, CFG.xLeft, win);
       msg += '전파 k_z ' + (m != null ? m.toFixed(4) : '—') + '/' + kz.toFixed(4) + (m != null ? ' (' + (m / kz * 100).toFixed(0) + '%)' : ''); }
-    else if (kap) { var mk = WGM.measureKappaN(amp, CFG.xLeft, win);
-      msg += '차단 κ ' + (mk ? mk.toFixed(4) : '—') + '/' + kap.toFixed(4) +
-        (mk ? ' (' + (mk / kap * 100).toFixed(0) + '%)' : ''); }
+    else if (kap) {
+      var kwin = WGM.kappaWindowN(CFG.L, kap, p.d);
+      var mk = WGM.measureKappaN(amp, CFG.xLeft, kwin);
+      if (mk != null) {
+        var pct = mk / kap * 100;
+        var band = pct > 85 && pct < 115 ? '[±15% OK]' : '[밴드 벗어남]';
+        msg += '차단 κ ' + mk.toFixed(4) + '/' + kap.toFixed(4) + ' (' + pct.toFixed(0) + '%) ' + band;
+      } else {
+        msg += '차단 κ 측정 불가(1/κ=' + (1/kap).toFixed(1) + '셀 d=' + p.d.toFixed(1) + '셀)';
+      }
+    }
     console.log(msg);
   });
 }
