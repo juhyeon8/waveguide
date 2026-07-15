@@ -4,27 +4,30 @@
   var CFG = { a: 60, L: 300, xLeft: 110, xRight: 110, Ny: 220, y0pix: 110, aw: 0.8, Nmax: 420, z0: 36 };
   var state = { lambda: 90, y0spec: 30, dManual: 5, dAutoOn: true, phase: 0, dPhi: 0.15, paused: false };
   var el = function (id) { return document.getElementById(id); };
-  var cvTot = el('cvTot');
+  var cvInc = el('cvInc'), cvTot = el('cvTot'), cvScat = el('cvScat');
 
   function currentD() {
     return state.dAutoOn ? WGM.dAuto(state.lambda, CFG.L, CFG.Nmax) : state.dManual;
   }
+  function geom(s) { return { Nx: s.Nx, Ny: s.Ny, y0: CFG.y0pix, a: CFG.a, xLeft: CFG.xLeft, L: CFG.L }; }
   function rebuild() {
     var p = { lambda: state.lambda, a: CFG.a, L: CFG.L, d: currentD(), y0spec: state.y0spec,
       aw: CFG.aw, xLeft: CFG.xLeft, xRight: CFG.xRight, Ny: CFG.Ny, y0pix: CFG.y0pix, z0: CFG.z0 };
     var s = WGM.computeScene(core, WG, p);
-    cvTot.width = s.Nx; cvTot.height = s.Ny;
+    [cvInc, cvTot, cvScat].forEach(function (cv) { cv.width = s.Nx; cv.height = s.Ny; });
+    WG.updateOverlays({ inc: cvInc.parentNode, scat: cvScat.parentNode, tot: cvTot.parentNode }, geom(s));
     window.__scene = s;
-    if (window.__afterRebuild) window.__afterRebuild(s); // Task 9·10에서 그래프·판독 갱신
+    if (window.__afterRebuild) window.__afterRebuild(s);
   }
 
   var A = CFG.a;
   function syncReadouts() {
-    el('lambdaVal').textContent = (state.lambda / A).toFixed(2) + ' a  (' + state.lambda.toFixed(0) + ' 셀)';
-    el('y0Val').textContent = (state.y0spec / A).toFixed(2) + ' a';
-    var d = currentD();
-    el('dVal').textContent = d.toFixed(2) + ' 셀 (d/λ=' + (d / state.lambda).toFixed(3) + ')';
+    var lam = state.lambda, y0 = state.y0spec, d = currentD();
+    el('lambdaVal').textContent = (lam / A).toFixed(2) + ' a (' + lam.toFixed(0) + ' 셀 = ' + lam.toFixed(0) + ' mm)';
+    el('y0Val').textContent = (y0 / A).toFixed(2) + ' a (' + y0.toFixed(0) + ' 셀 = ' + y0.toFixed(0) + ' mm)';
+    el('dVal').textContent = d.toFixed(2) + ' 셀 = ' + d.toFixed(2) + ' mm (d/λ=' + (d / lam).toFixed(3) + ')';
     el('dWire').disabled = state.dAutoOn;
+    if (state.dAutoOn) el('dWire').value = Math.round(d); // 자동일 땐 슬라이더 손잡이도 자동값 반영
   }
   var timer = null;
   function scheduleRebuild() { if (timer) clearTimeout(timer);
@@ -39,6 +42,7 @@
   el('dWire').addEventListener('input', function (e) {
     state.dManual = +e.target.value; syncReadouts(); scheduleRebuild(); });
   el('dAuto').addEventListener('change', function (e) {
+    if (!e.target.checked) state.dManual = Math.round(currentD()); // 자동→수동: 현재 자동값 이어받아 급변 방지
     state.dAutoOn = e.target.checked; syncReadouts(); rebuildNow(); });
   el('pauseBtn').addEventListener('click', function () {
     state.paused = !state.paused; el('pauseBtn').textContent = state.paused ? '▶ 재개' : '⏸ 일시정지'; });
@@ -53,10 +57,9 @@
   Array.prototype.forEach.call(document.querySelectorAll('[data-preset]'), function (b) {
     b.addEventListener('click', function () { applyPreset(b.getAttribute('data-preset')); });
   });
-  // 초기: state.lambda를 셀 단위로 세팅(슬라이더 기본 1.5a)
   state.lambda = 1.5 * A; state.y0spec = 0.5 * A; syncReadouts();
 
-  function autoScale(field) { // 완전 차단 대비: 관찰 구간 근처 최대에 스케일
+  function autoScale(field) {
     var Ny = field.Ny, re = field.re, im = field.im, mx = 1e-6;
     var i0 = CFG.xLeft, i1 = CFG.xLeft + Math.round(0.4 * CFG.L);
     for (var i = i0; i < i1; i++) for (var j = 0; j < Ny; j++) {
@@ -65,29 +68,31 @@
     }
     return mx;
   }
-  function geom(s) { return { Nx: s.Nx, Ny: s.Ny, y0: CFG.y0pix, a: CFG.a, xLeft: CFG.xLeft, L: CFG.L }; }
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function frame() {
     var s = window.__scene;
     if (s) {
       if (!state.paused && !reduce) state.phase += state.dPhi;
-      var g = cvTot.getContext('2d'), sc = autoScale(s.tot);
-      WG.drawField(g, s.tot, sc, state.phase);
-      WG.drawPlatesWire(g, geom(s));
-      WG.drawWireDots(g, s.wiresPixDraw, s.cre, s.cim, state.phase, sc, s.Ny);
+      var g = geom(s), sc = autoScale(s.tot); // §2 공통 스케일 = tot 기준, 세 패널 동일
+      WG.drawField(cvInc.getContext('2d'), s.inc, sc, state.phase);
+      WG.drawField(cvTot.getContext('2d'), s.tot, sc, state.phase);
+      WG.drawField(cvScat.getContext('2d'), s.scat, sc, state.phase);
+      var gi = cvInc.getContext('2d'), gt = cvTot.getContext('2d'), gs = cvScat.getContext('2d');
+      WG.drawPlatesWire(gi, g); WG.drawPlatesWire(gt, g); WG.drawPlatesWire(gs, g);
+      WG.drawWireDots(gt, s.wiresPixDraw, s.cre, s.cim, state.phase, sc, s.Ny);
+      WG.drawWireDots(gs, s.wiresPixDraw, s.cre, s.cim, state.phase, sc, s.Ny);
     }
     requestAnimationFrame(frame);
   }
 
   function renderReadouts(s) {
     var a = CFG.a, k = s.k, y0spec = state.y0spec, xLeft = CFG.xLeft, y0pix = CFG.y0pix, L = CFG.L;
-    var kappas = [1, 2, 3].map(function (n) { return WGM.theoryKappa(n, a, k); }).filter(function (v) { return v; });
-    var kappaMin = kappas.length ? Math.min.apply(null, kappas) : null;
-    var win = WGM.fitWindowZ(CFG.z0, L, kappaMin);
-    var html = '<div class="row"><b>벽 무결성</b>: |T|=' + s.wallT.toFixed(3) +
+    var html = '<div class="row"><b>벽 무결성</b>: 누설 |T|=' + s.wallT.toFixed(3) +
       ' , d/λ=' + s.dOverLambda.toFixed(3) +
-      (s.dOverLambda > 0.1 || s.wallT > 0.35 ? ' <span class="warn">⚠ 벽 근사 무너짐</span>' : '') + ' — 차단 κ 정확도는 |T|보다 엄격(모드 분해 신뢰 d/λ≲0.06)' + '</div>';
+      (s.dOverLambda > 0.1 || s.wallT > 0.35 ? ' <span class="warn">⚠ 벽 근사 무너짐</span>' : '') +
+      ' — 차단 κ 정확도는 |T|보다 엄격(모드 분해 신뢰 d/λ≲0.06)' + '</div>';
+    html += '<div class="tcap">└ T = 도선 벽이 새는 정도. 0에 가까울수록 연속 도체판에 가까움(모드 분해 신뢰). 클수록 도선 틈으로 장이 샘.</div>';
     [1, 2, 3].forEach(function (n) {
       var coup = Math.abs(Math.sin(n * Math.PI * y0spec / a));
       var line = '<div class="row mode' + n + '">mode ' + n +
@@ -95,6 +100,9 @@
       if (coup < 0.02) { line += ' — <b>여기되지 않음(마디 위치)</b>'; }
       else {
         var kz = WGM.theoryKz(n, a, k), kap = WGM.theoryKappa(n, a, k);
+        var kappas = [1, 2, 3].map(function (m) { return WGM.theoryKappa(m, a, k); }).filter(function (v) { return v; });
+        var kappaMin = kappas.length ? Math.min.apply(null, kappas) : null;
+        var win = WGM.fitWindowZ(CFG.z0, L, kappaMin);
         if (kz) {
           var mkz = WGM.measureKzN(s.tot, y0pix, a, n, xLeft, win);
           line += ' — 전파: k_z 측정 ' + (mkz != null ? mkz.toFixed(4) : '—') + ' / 이론 ' + kz.toFixed(4) +

@@ -3,15 +3,29 @@
 body { margin:0; padding:16px; background:var(--bg); color:var(--fg);
   font-family:"Segoe UI",system-ui,sans-serif; }
 h1 { font-size:1.15rem; margin:0 0 4px; }
-.sub { color:var(--mut); font-size:0.85rem; margin:0 0 12px; max-width:820px; }
-.stage { margin:10px 0; }
-.cvwrap { position:relative; display:inline-block; max-width:100%; }
-canvas { max-width:100%; background:#0a0c18; border:1px solid #2a3050; image-rendering:pixelated; }
-#cvGraph { image-rendering:auto; }
+.sub { color:var(--mut); font-size:0.85rem; margin:0 0 6px; max-width:820px; }
+.scale-note { color:var(--mut); font-size:0.82rem; margin:0 0 12px; max-width:820px; }
+
+/* 2×2 그리드: 좌상 입사 · 우상 전체 · 좌하 산란 · 우하 그래프 */
+.grid2x2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start; max-width:1120px; }
+.panel { background:#161b2e; border:1px solid #2a3050; border-radius:10px; padding:10px 12px; }
+.panel h3 { margin:0 0 6px; font-size:0.95rem; color:#d6dcf7; font-weight:600; }
+.cvwrap { position:relative; display:block; width:100%; }
+.cvwrap canvas { width:100%; height:auto; display:block; background:#0a0c18;
+  border:1px solid #2a3050; image-rendering:pixelated; }
+#cvInc, #cvScat, #cvTot { aspect-ratio: 520 / 220; }
+#cvGraph { image-rendering:auto; aspect-ratio: 620 / 240; }
+.cv-label { position:absolute; font-size:0.72rem; line-height:1; pointer-events:none; white-space:nowrap; }
+.cv-label-center { transform:translateX(-50%); }
+@media (max-width:900px){ .grid2x2 { grid-template-columns:1fr; } }
+
+#controls { margin-top:14px; max-width:1120px; }
 .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 0; }
 .row label { min-width:120px; color:var(--mut); font-size:0.85rem; }
 button { background:#1b2140; color:var(--fg); border:1px solid #3a4270;
   border-radius:6px; padding:5px 10px; cursor:pointer; font-size:0.85rem; }
 button:hover { background:#252d54; }
 .warn { color:#f4a261; }
+.tcap { color:var(--mut); font-size:0.78rem; margin:2px 0 6px; }
+#readouts { margin-top:10px; max-width:1120px; }
 .mode1 { color:#4a90d9; } .mode2 { color:#3fb56b; } .mode3 { color:#e8913a; }
