@@ -28,8 +28,10 @@ function run(name, ratio, y0ratio) {
         var pct = mk / kap * 100;
         var band = pct > 85 && pct < 115 ? '[±15% OK]' : '[밴드 벗어남]';
         msg += '차단 κ ' + mk.toFixed(4) + '/' + kap.toFixed(4) + ' (' + pct.toFixed(0) + '%) ' + band;
+      } else if (!kwin.resolvable) {
+        msg += '차단 κ 측정 불가(감쇠길이 1/κ=' + (1/kap).toFixed(1) + '셀 < 도선간격 d=' + p.d.toFixed(1) + '셀, 분해능 한계)';
       } else {
-        msg += '차단 κ 측정 불가(1/κ=' + (1/kap).toFixed(1) + '셀 d=' + p.d.toFixed(1) + '셀)';
+        msg += '차단 κ 측정 불가(수치 바닥/분해능 한계)';
       }
     }
     console.log(msg);

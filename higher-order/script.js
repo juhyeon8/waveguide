@@ -96,7 +96,6 @@
       else {
         var kz = WGM.theoryKz(n, a, k), kap = WGM.theoryKappa(n, a, k);
         if (kz) {
-          var amp = WGM.modeCoefGridN(s.tot, y0pix, a, n);
           var mkz = WGM.measureKzN(s.tot, y0pix, a, n, xLeft, win);
           line += ' — 전파: k_z 측정 ' + (mkz != null ? mkz.toFixed(4) : '—') + ' / 이론 ' + kz.toFixed(4) +
             (mkz != null ? ' (' + (mkz / kz * 100).toFixed(0) + '%)' : '');
@@ -107,9 +106,11 @@
           if (mkap != null) {
             line += ' — 차단: κ 측정 ' + mkap.toFixed(4) + ' / 이론 ' + kap.toFixed(4) +
               ' (' + (mkap / kap * 100).toFixed(0) + '%)';
-          } else {
+          } else if (!kwin.resolvable) {
             line += ' — 차단: 이론 κ ' + kap.toFixed(4) + ' — <b>측정 불가</b>(감쇠길이 1/κ=' +
               (1 / kap).toFixed(1) + '셀 < 도선간격 d=' + s.d.toFixed(1) + '셀, 분해능 한계)';
+          } else {
+            line += ' — 차단: 이론 κ ' + kap.toFixed(4) + ' — <b>측정 불가</b>(수치 바닥/분해능 한계)';
           }
         }
       }
