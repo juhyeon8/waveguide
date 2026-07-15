@@ -53,6 +53,17 @@
     var zEnd = 0.7 * L;
     return { zStart: zStart, zEnd: zEnd, valid: zEnd > zStart };
   }
+
+  // κ 측정 전용 per-mode 창. core.js의 kappaFitWindow를 그대로 미러하되 resolvable 조건 추가.
+  // 물리 근거: 차단 모드는 e^{−κz}. 감쇠길이 1/κ이 도선 간격 d보다 짧으면 인접 도선 사이에서
+  // 장이 거의 다 사라져 벽 도선 배열이 감쇠 프로파일을 표현하지 못함 → κ 측정 불가(기울기 비물리).
+  function kappaWindowN(L, kappaThy, d) {
+    var zStart = 0.15 * L;
+    var zEnd = Math.min(0.7 * L, zStart + 2.5 / kappaThy);
+    var valid = (zEnd - zStart) > 0 && kappaThy > 0 && isFinite(kappaThy);
+    var resolvable = valid && (1 / kappaThy >= d);
+    return { zStart: zStart, zEnd: zEnd, valid: valid, resolvable: resolvable };
+  }
   function _fitLogSlope(xs, amps) {
     var sx = 0, sy = 0, sxx = 0, sxy = 0, n = 0;
     for (var i = 0; i < xs.length; i++) {
@@ -63,14 +74,23 @@
     return (n * sxy - sx * sy) / (n * sxx - sx * sx);
   }
   function measureKappaN(ampArr, xLeft, win) {
-    if (!win.valid) return null;
+    if (!win.valid || !win.resolvable) return null;
     var xs = [], amps = [];
     for (var xc = win.zStart; xc <= win.zEnd; xc += 1) {
       var ip = Math.round(xc) + xLeft; if (ip < 0 || ip >= ampArr.length) continue;
       xs.push(xc); amps.push(ampArr[ip]);
     }
+    if (xs.length === 0) return null;
+    // 바닥/평탄 가드: 끝 샘플 <= 0 또는 시작/끝 진폭비 < 1.5 (거의 감쇠 안 함)
+    var endAmp = amps[amps.length - 1];
+    if (endAmp <= 0) return null;
+    var startAmp = amps[0];
+    if (startAmp > 0 && startAmp / endAmp < 1.5) return null;
     var s = _fitLogSlope(xs, amps);
-    return (s === null) ? null : -s;
+    if (s === null) return null;
+    // 기울기 s >= 0 (비물리: 성장 또는 평탄) → 측정 불가
+    if (s >= 0) return null;
+    return -s;
   }
   function measureKzN(field, y0, a, n, xLeft, win) {
     if (!win.valid) return null;
@@ -123,7 +143,7 @@
     };
   }
 
-  var API = { dAuto: dAuto, modeCoefGridN: modeCoefGridN, modeCoefComplexAtN: modeCoefComplexAtN, theoryKappa: theoryKappa, theoryKz: theoryKz, theoryPropAmp: theoryPropAmp, fitWindowZ: fitWindowZ, measureKappaN: measureKappaN, measureKzN: measureKzN, wallTransmittanceT: wallTransmittanceT, computeScene: computeScene };
+  var API = { dAuto: dAuto, modeCoefGridN: modeCoefGridN, modeCoefComplexAtN: modeCoefComplexAtN, theoryKappa: theoryKappa, theoryKz: theoryKz, theoryPropAmp: theoryPropAmp, fitWindowZ: fitWindowZ, kappaWindowN: kappaWindowN, measureKappaN: measureKappaN, measureKzN: measureKzN, wallTransmittanceT: wallTransmittanceT, computeScene: computeScene };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else { global.WGM = global.WGM || {}; Object.assign(global.WGM, API); }
 })(typeof globalThis !== 'undefined' ? globalThis : this);
