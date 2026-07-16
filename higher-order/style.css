@@ -32,17 +32,20 @@ h1 { font-size:1.15rem; margin:0 0 4px; }
 /* 컨트롤 */
 .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 0; }
 .row label { min-width:96px; color:var(--mut); font-size:0.85rem; }
+#controls .row span { color:var(--fg); font-size:0.82rem; min-width:118px; }
 button { background:#1b2140; color:var(--fg); border:1px solid #3a4270;
   border-radius:6px; padding:5px 10px; cursor:pointer; font-size:0.85rem; }
 button:hover { background:#252d54; }
 
-/* 프리셋 2×2 그리드 (버튼 4개 같은 폭, 텍스트 길면 자연 줄바꿈) */
+/* 프리셋 2×2 그리드 (버튼 4개 폭·높이 동일, 텍스트 길면 자연 줄바꿈·가운데 정렬) */
 .preset-grid { flex:1 1 100%; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.preset-grid button { white-space:normal; }
+.preset-grid button { white-space:normal; min-height:52px;
+  display:flex; align-items:center; justify-content:center; text-align:center; }
 
 .warn { color:#f4a261; }
 .tcap { color:var(--mut); font-size:0.78rem; margin:2px 0 6px; }
-#readouts { margin-top:12px; border-top:1px solid #2a3050; padding-top:10px; }
+#readouts { margin-top:12px; border-top:1px solid #2a3050; padding-top:10px; font-size:0.8rem; }
+#readouts .rd { display:block; margin:4px 0; line-height:1.4; }
 .mode1 { color:#4a90d9; } .mode2 { color:#3fb56b; } .mode3 { color:#e8913a; }
 
 /* 반응형: 폭 900px 이하면 사이드바 위 · 그래프 아래 세로 배치로 복귀 */

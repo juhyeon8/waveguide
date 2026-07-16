@@ -3,7 +3,12 @@
   var COLORS = { 1: '#4a90d9', 2: '#3fb56b', 3: '#e8913a' };
 
   function drawModeGraph(ctx, s, CFG) {
-    var W = ctx.canvas.width, H = ctx.canvas.height, padL = 52, padB = 30, padT = 16, padR = 12;
+    var dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);           // 논리좌표(CSS px)로 그림 → dpr 배율만큼 선명
+    var W = ctx.canvas.width / dpr, H = ctx.canvas.height / dpr;
+    // ★ z축 정렬: 전체장 패널과 동일한 가로 비율(xLeft·L·xRight 기준)로 여백 계산
+    var NxTot = CFG.xLeft + CFG.L + CFG.xRight;
+    var padL = (CFG.xLeft / NxTot) * W, padR = (CFG.xRight / NxTot) * W, padB = 30, padT = 46;
     ctx.clearRect(0, 0, W, H);
     var a = CFG.a, k = s.k, y0pix = CFG.y0pix, xLeft = CFG.xLeft, L = CFG.L;
 
@@ -31,17 +36,21 @@
       ctx.strokeStyle = '#1b2140'; ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(W - padR, yy); ctx.stroke();
       ctx.textAlign = 'right'; ctx.fillText('1e' + (Math.round(yMaxLog) - dd), padL - 5, yy + 4);
     }
-    ctx.textAlign = 'center'; ctx.fillText('z (진행축)', (padL + W) / 2, H - 4);
-    // §3-4 y축 세로 라벨
+    // ★ 가로축 z 눈금 (5 cm = 50칸 간격)
+    ctx.textAlign = 'center';
+    for (var zt = 0; zt <= L + 0.1; zt += 50) {
+      var xx = X(zt);
+      ctx.strokeStyle = '#1b2140'; ctx.beginPath(); ctx.moveTo(xx, padT); ctx.lineTo(xx, H - padB); ctx.stroke();
+      ctx.fillStyle = '#8892b5'; ctx.fillText((zt / 10).toFixed(0), xx, H - padB + 14);
+    }
+    ctx.fillStyle = '#8892b5'; ctx.fillText('z (진행축, cm)', (padL + (W - padR)) / 2, H - 4);
+    // §3-4 y축 세로 라벨 — 눈금값 가까이로
     ctx.save();
-    ctx.translate(13, padT + (H - padT - padB) / 2);
+    ctx.translate(Math.max(12, padL - 38), padT + (H - padT - padB) / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center'; ctx.fillStyle = '#8892b5'; ctx.font = '11px "Segoe UI",sans-serif';
     ctx.fillText('|cₙ(z)|  (모드 계수 크기, 로그)', 0, 0);
     ctx.restore();
-
-    ctx.fillStyle = 'rgba(154,166,216,0.08)';
-    ctx.fillRect(X(win.zStart), padT, X(win.zEnd) - X(win.zStart), H - padT - padB);
 
     var floorThresh = norm * 1e-4; // §3-6 수치 바닥(하단 1e-4 데케이드)
     [1, 2, 3].forEach(function (n) {
@@ -83,8 +92,8 @@
       ctx.stroke(); ctx.setLineDash([]);
     });
 
-    drawLegend(ctx, padL, padT);
-    if (s.dOverLambda > 0.1 || s.wallT > 0.35) drawCollapseWarn(ctx, W, padT);
+    drawLegend(ctx, padL, W, padR);
+    if (s.dOverLambda > 0.1 || s.wallT > 0.35) drawCollapseWarn(ctx, W, padT, padR);
   }
 
   function theoryHeight(n, s, CFG, win, amps, xLeft) {
@@ -98,27 +107,31 @@
     for (var i = i0; i <= i1; i++) { var v = arr[i]; if (v < 1e-14) v = 1e-14; sIn += Math.log(v); c++; }
     return c ? Math.exp(sIn / c) : 1e-9; }
 
-  function drawLegend(ctx, x, y) {
+  // 플롯 바깥(상단 왼쪽 위) 가로 2줄 범례 — 곡선과 겹치지 않음
+  function drawLegend(ctx, plotL, W, padR) {
     ctx.textAlign = 'left'; ctx.font = '11px "Segoe UI",sans-serif';
-    var items = [[1, 'mode1'], [2, 'mode2'], [3, 'mode3']];
-    items.forEach(function (it, i) {
-      var yy = y + 12 + i * 15; ctx.strokeStyle = COLORS[it[0]]; ctx.lineWidth = 2;
-      ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(x + 8, yy); ctx.lineTo(x + 26, yy); ctx.stroke();
-      ctx.fillStyle = COLORS[it[0]]; ctx.fillText(it[1], x + 32, yy + 4);
+    var x0 = plotL, ya = 13, yb = 30;   // 플롯 위(padT=46) 바깥 영역
+    // 1줄: 모드 색
+    var mx = x0;
+    [[1, 'mode1'], [2, 'mode2'], [3, 'mode3']].forEach(function (it) {
+      ctx.strokeStyle = COLORS[it[0]]; ctx.lineWidth = 2; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(mx, ya); ctx.lineTo(mx + 18, ya); ctx.stroke();
+      ctx.fillStyle = COLORS[it[0]]; ctx.fillText(it[1], mx + 22, ya + 4);
+      mx += 74;
     });
-    // §3-5 실선/점선 샘플 획
-    var lx = x + 92;
+    // 2줄: 실선/점선 + 주석
+    var sx = x0;
     ctx.strokeStyle = '#aab2cf'; ctx.lineWidth = 1.8; ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(lx, y + 9); ctx.lineTo(lx + 22, y + 9); ctx.stroke();
-    ctx.fillStyle = '#8892b5'; ctx.fillText('실측(MoM)', lx + 28, y + 12);
+    ctx.beginPath(); ctx.moveTo(sx, yb); ctx.lineTo(sx + 18, yb); ctx.stroke();
+    ctx.fillStyle = '#8892b5'; ctx.fillText('실측(MoM)', sx + 22, yb + 4); sx += 98;
     ctx.strokeStyle = '#aab2cf'; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]);
-    ctx.beginPath(); ctx.moveTo(lx, y + 24); ctx.lineTo(lx + 22, y + 24); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = '#8892b5'; ctx.fillText('이론', lx + 28, y + 27);
-    ctx.fillText('(n≥4 미표시)', lx, y + 42);
+    ctx.beginPath(); ctx.moveTo(sx, yb); ctx.lineTo(sx + 18, yb); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#8892b5'; ctx.fillText('이론', sx + 22, yb + 4); sx += 58;
+    ctx.fillText('(n≥4 미표시)', sx, yb + 4);
   }
-  function drawCollapseWarn(ctx, W, y) {
+  function drawCollapseWarn(ctx, W, y, padR) {
     ctx.fillStyle = '#f4a261'; ctx.textAlign = 'right'; ctx.font = 'bold 12px "Segoe UI",sans-serif';
-    ctx.fillText('⚠ 벽 근사 무너짐 — 모드 분해 신뢰도 낮음', W - 16, y + 12);
+    ctx.fillText('⚠ 벽 근사 무너짐 — 모드 분해 신뢰도 낮음', W - (padR || 12) - 4, y + 12);
   }
 
   global.WG = global.WG || {}; global.WG.drawModeGraph = drawModeGraph;
